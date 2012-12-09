@@ -114,7 +114,15 @@ date
 echo "作業ディレクトリを作成します"
 
 # 作業ディレクトリの作成
-calc_dir=`mktemp -d -p ./`
+calc_dir=`mktemp -d tmp.XXXXXXXXXX`
+
+if [ $? -eq 0 ];then
+	:
+else
+	echo "作業ディイレクトリの作成に失敗したため処理を中止します。"
+	exit 0;
+fi	
+
 cd ${calc_dir}
 echo "作業ディレクトリは${calc_dir} です"
 
@@ -122,10 +130,15 @@ echo "作業ディレクトリは${calc_dir} です"
 date
 echo "カラム抽出処理を開始"
 
-cat ../${TARGET_FILE} |awk -v KEY_COLUMN=${KEY_COLUMN} -v VALUE_COLUMN=${VALUE_COLUMN} -v SUM_COLUMN=${SUM_COLUMN} -v DELIMITER_INPUT=${DELIMITER_INPUT} -v DELIMITER_OUTPUT=${DELIMITER_OUTPUT} 'BEGIN { FS = DELIMITER_INPUT; OFS = DELIMITER_OUTPUT } ; {print $KEY_COLUMN, $VALUE_COLUMN, $SUM_COLUMN}' > tmp_data.txt
+cat ../${TARGET_FILE} |gawk -v KEY_COLUMN=${KEY_COLUMN} -v VALUE_COLUMN=${VALUE_COLUMN} -v SUM_COLUMN=${SUM_COLUMN} -v DELIMITER_INPUT=${DELIMITER_INPUT} -v DELIMITER_OUTPUT=${DELIMITER_OUTPUT} 'BEGIN { FS = DELIMITER_INPUT; OFS = DELIMITER_OUTPUT } ; {print $KEY_COLUMN, $VALUE_COLUMN, $SUM_COLUMN}' > tmp_data.txt
 
 # スラッシュがあるとこけるのでハイフンに置換（効率が悪いので今後対処予定
-sed -i -e 's/\//-/g'  tmp_data.txt
+grep -E "/" tmp_data.txt >> /dev/null
+if [ $? -ge 1 ];then
+	:
+else
+	sed -i -e 's/\//-/g'  tmp_data.txt
+fi
 
 date
 echo "カラム抽出処理を完了"
@@ -161,12 +174,12 @@ echo "表頭と表側の抽出完了"
 # 集計処理
 date
 echo "集計処理の開始"
-awk -F, '{print > "pre_multi_"$2}' tmp_data.txt
+gawk -F, '{print > "pre_multi_"$2}' tmp_data.txt
 
 for file in ${array_value[@]}
 do
-	awk -F, '{a[$1]+=$3;}END{for(i in a)print i","a[i];}' pre_multi_${file} | sort -t 1 > sort_${file}
-	join -t ',' -1 1 -2 1 -a 1 rowname.txt sort_${file} | awk -F, '{print $2}' | sed 's/^$/0/g' > split_sum_${file}
+	gawk -F, '{a[$1]+=$3;}END{for(i in a)print i","a[i];}' pre_multi_${file} | sort -t 1 > sort_${file}
+	join -t ',' -1 1 -2 1 -a 1 rowname.txt sort_${file} | gawk -F, '{print $2}' | sed 's/^$/0/g' > split_sum_${file}
 
 done
 
