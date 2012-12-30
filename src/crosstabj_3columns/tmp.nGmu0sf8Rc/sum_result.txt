@@ -1,6 +1,0 @@
-tbread	candy	ice	juice	oreo	
-A	0	500	140	350	0
-B	0	100	630	0	0
-C	146	0	0	120	0
-I	0	0	0	0	1050
-M	0	0	350	0	0

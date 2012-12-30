@@ -30,12 +30,11 @@
 # 1 : 対象ファイル名
 # 2 : クロス集計の行にするカラム 自然数を指定
 # 3 : クロス集計の列にするカラム 自然数を指定
-# 4 : グループ化して合計値を算出するカラム 自然数を指定
-# 5 : 対象ファイルの形式 c = CSV, t = TSV, 省略 = CSV
-# 6 : デバッグモード d = 有効 一時ファイルを削除しない, 省略 = 無効
+# 4 : 対象ファイルの形式 c = CSV, t = TSV, 省略 = CSV
+# 5 : デバッグモード d = 有効 一時ファイルを削除しない, 省略 = 無効
 #
-# 実行例 : sh crosstabj_3columns.sh sample.txt 1 2 3 c
-#          sh crosstabj_3columns.sh hoge.txt 5 8 2 t
+# 実行例 : sh crosstabj_2columns.sh sample.txt 1 2 c
+#          sh crosstabj_2columns.sh hoge.txt 5 2 t
 #
 #################################################################################
 
@@ -46,15 +45,14 @@ export LC_ALL=C
 TARGET_FILE=$1
 KEY_COLUMN=$2
 VALUE_COLUMN=$3
-SUM_COLUMN=$4
 
-case $5 in
+case $4 in
         c) DELIMITER_INPUT=',';;
         t) DELIMITER_INPUT='\t';;
         *) DELIMITER_INPUT=',';;
 esac
 
-case $6 in
+case $5 in
 	d) DEBUG_MODE=1;;
 	*) DEBUG_MODE=0;;
 esac
@@ -63,8 +61,8 @@ esac
 DELIMITER_OUTPUT=','
 
 # Validation用の設定
-MIN_ARGS=4
-MAX_ARGS=6
+MIN_ARGS=3
+MAX_ARGS=5
 
 ## Validation
 if [ $# -ge ${MIN_ARGS} ]; then
@@ -96,7 +94,6 @@ function func_check_numeric() {
 
 func_check_numeric ${KEY_COLUMN}
 func_check_numeric ${VALUE_COLUMN}
-func_check_numeric ${SUM_COLUMN}
 
 # func:一時ファイル削除
 function func_eraser() {
@@ -130,7 +127,7 @@ echo "作業ディレクトリは${calc_dir} です"
 date
 echo "カラム抽出処理を開始"
 
-cat ../${TARGET_FILE} |gawk -v KEY_COLUMN=${KEY_COLUMN} -v VALUE_COLUMN=${VALUE_COLUMN} -v SUM_COLUMN=${SUM_COLUMN} -v DELIMITER_INPUT=${DELIMITER_INPUT} -v DELIMITER_OUTPUT=${DELIMITER_OUTPUT} 'BEGIN { FS = DELIMITER_INPUT; OFS = DELIMITER_OUTPUT } ; {print $KEY_COLUMN, $VALUE_COLUMN, $SUM_COLUMN}' > tmp_data.txt
+cat ../${TARGET_FILE} |gawk -v KEY_COLUMN=${KEY_COLUMN} -v VALUE_COLUMN=${VALUE_COLUMN} -v DELIMITER_INPUT=${DELIMITER_INPUT} -v DELIMITER_OUTPUT=${DELIMITER_OUTPUT} 'BEGIN { FS = DELIMITER_INPUT; OFS = DELIMITER_OUTPUT } ; {print $KEY_COLUMN, $VALUE_COLUMN}' > tmp_data.txt
 
 # スラッシュがあるとこけるのでハイフンに置換（効率が悪いので今後対処予定
 grep -E "/" tmp_data.txt >> /dev/null
@@ -178,9 +175,8 @@ gawk -F, '{print > "pre_multi_"$2}' tmp_data.txt
 
 for file in ${array_value[@]}
 do
-	gawk -F, '{a[$1]+=$3;}END{for(i in a)print i","a[i];}' pre_multi_${file} | sort -t 1 > sort_${file}
+	gawk -F, '{a[$1]++;}END{for (i in a)print i","a[i];}' pre_multi_${file} | sort -t 1 > sort_${file}
 	join -t ',' -1 1 -2 1 -a 1 rowname.txt sort_${file} | gawk -F, '{print $2}' | sed 's/^$/0/g' > split_sum_${file}
-
 done
 
 cp header.txt sum_result.txt
