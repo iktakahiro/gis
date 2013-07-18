@@ -2,9 +2,9 @@
 
 ## Python3.3 インストール
 cd /usr/local/src
-wget http://www.python.org/ftp/python/3.3.0/Python-3.3.0.tgz
-tar zxvf Python-3.3.0.tgz
-cd Python-3.3.0
+wget http://www.python.org/ftp/python/3.3.2/Python-3.3.2.tgz
+tar zxvf Python-3.3.2.tgz
+cd Python-3.3.2
 ./configure \
 --prefix=/usr/local/python \
 --enable-shared
