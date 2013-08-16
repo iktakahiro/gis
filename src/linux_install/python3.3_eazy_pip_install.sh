@@ -15,11 +15,11 @@ ldconfig
 
 ln -s /usr/local/python/bin/python3 /usr/local/bin/python
 
-## eazy_install インストール
+## eazy_install（distribute） インストール
 cd /usr/local/src
-wget http://pypi.python.org/packages/source/d/distribute/distribute-0.6.34.tar.gz
-tar zxvf distribute-0.6.34.tar.gz
-/usr/local/bin/python distribute-0.6.34/setup.py install
+wget https://pypi.python.org/packages/source/d/distribute/distribute-0.7.3.zip
+unzip distribute-0.7.3.zip
+python distribute-0.7.3/setup.py install
 
 ln -s /usr/local/python/bin/easy_install /usr/local/bin/easy_install
 
