@@ -144,10 +144,10 @@ date
 echo "表頭と表側の抽出開始"
 
 array_key=()
-array_key=(`cut -f 1 -d , tmp_data.txt |sort -u`)
+array_key=(`cut -f 1 -d , tmp_data.txt |sort -u -n`)
 
 array_value=()
-array_value=(`cut -f 2 -d , tmp_data.txt |sort -u`)
+array_value=(`cut -f 2 -d , tmp_data.txt |sort -u -n`)
 
 # rownameの作成
 for key in ${array_key[@]}
@@ -175,7 +175,7 @@ gawk -F, '{print > "pre_multi_"$2}' tmp_data.txt
 
 for file in ${array_value[@]}
 do
-	gawk -F, '{a[$1]++;}END{for (i in a)print i","a[i];}' pre_multi_${file} | sort -t 1 > sort_${file}
+	gawk -F, '{a[$1]++;}END{for (i in a)print i","a[i];}' pre_multi_${file} | sort -n -t 1 > sort_${file}
 	join -t ',' -1 1 -2 1 -a 1 rowname.txt sort_${file} | gawk -F, '{print $2}' | sed 's/^$/0/g' > split_sum_${file}
 done
 

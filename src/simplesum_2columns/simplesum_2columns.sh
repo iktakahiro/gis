@@ -144,7 +144,7 @@ date
 echo "キーの抽出開始"
 
 array_key=()
-array_key=(`cut -f 1 -d , tmp_data.txt |sort -u`)
+array_key=(`cut -f 1 -d , tmp_data.txt |sort -u -n`)
 
 echo "キーの抽出完了"
 
